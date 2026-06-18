@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>月子中心 · 护理文书工作台</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','PingFang SC','Microsoft YaHei',sans-serif;background:#f5f6fa;color:#333}
+
+/* 顶部 */
+.topbar{display:flex;align-items:center;justify-content:space-between;height:52px;background:linear-gradient(135deg,#d63384,#c2185b);padding:0 20px;color:white;box-shadow:0 2px 8px rgba(214,51,132,.25)}
+.topbar-left{display:flex;align-items:center;gap:14px}
+.logo{font-size:18px;font-weight:700;letter-spacing:1px}
+.topbar-tabs{display:flex;gap:4px}
+.topbar-tab{padding:5px 16px;border-radius:20px;font-size:13px;cursor:pointer;transition:all .2s;color:rgba(255,255,255,.8)}
+.topbar-tab:hover{background:rgba(255,255,255,.15);color:white}
+.topbar-tab.active{background:rgba(255,255,255,.25);color:white;font-weight:600}
+.topbar-right{display:flex;align-items:center;gap:14px;font-size:12px}
+.avatar-sm{width:26px;height:26px;border-radius:50%;background:#fff;color:#c2185b;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+
+.page{padding:18px 20px;max-width:1600px;margin:0 auto}
+.hidden{display:none!important}
+
+/* ============ 床位牌 ============ */
+.bed-filter-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;background:white;padding:12px 18px;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.06)}
+.bed-filter-bar select,.bed-filter-bar input{padding:7px 12px;border:1px solid #e0e0e0;border-radius:8px;font-size:12px;outline:none}
+.bed-filter-bar input{width:200px}
+.stats-bar{display:flex;gap:18px;font-size:12px;color:#666;margin-left:auto}
+.stats-bar span{display:flex;align-items:center;gap:5px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dot-occupied{background:#d63384}
+.dot-empty{background:#2196f3}
+.dot-booked{background:#ff9800}
+.dot-maintenance{background:#9e9e9e}
+.dot-alert{background:#f44336}
+
+.floor-section{margin-bottom:24px}
+.floor-title{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:#444;margin-bottom:12px;padding-left:4px}
+.floor-title .floor-icon{color:#d63384}
+.floor-title .floor-count{font-size:11px;font-weight:400;color:#888;margin-left:4px}
+
+.bed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+
+.bed-card{background:white;border-radius:14px;padding:14px;cursor:pointer;box-shadow:0 1px 6px rgba(0,0,0,.06);transition:all .25s ease;border-left:4px solid transparent;position:relative;overflow:hidden}
+.bed-card:hover{transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.12)}
+.bed-card.occupied{border-left-color:#d63384}
+.bed-card.empty{border-left-color:#2196f3}
+.bed-card.booked{border-left-color:#ff9800}
+.bed-card.maintenance{border-left-color:#9e9e9e;opacity:.7}
+.bed-card.has-alert::after{content:'';position:absolute;top:10px;right:10px;width:10px;height:10px;border-radius:50%;background:#f44336;box-shadow:0 0 0 3px rgba(244,67,54,.2);animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
+
+.bed-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.room-num{font-size:20px;font-weight:700;color:#333}
+.room-tag{font-size:11px;padding:3px 10px;border-radius:12px;font-weight:600}
+.tag-occupied{background:#fce4ec;color:#d63384}
+.tag-empty{background:#e3f2fd;color:#2196f3}
+.tag-booked{background:#fff3e0;color:#ff9800}
+.tag-maintenance{background:#f5f5f5;color:#9e9e9e}
+.room-info{font-size:11px;color:#888;margin-bottom:10px}
+
+.mom-info{display:flex;gap:10px;margin-bottom:12px}
+.mom-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#fce4ec,#f8bbd0);display:flex;align-items:center;justify-content:center;color:#d63384;font-size:15px;font-weight:700;flex-shrink:0}
+.mom-detail{flex:1;min-width:0}
+.mom-name{font-size:15px;font-weight:600;color:#333;display:flex;align-items:center;gap:6px}
+.mom-name .age{font-size:11px;font-weight:400;color:#888}
+.mom-meta{font-size:11px;color:#888;margin-top:2px}
+.mom-date{font-size:11px;color:#aaa;margin-top:2px}
+
+.baby-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
+.baby-tag{font-size:10px;padding:2px 8px;border-radius:10px;background:#e3f2fd;color:#2196f3;font-weight:500}
+.baby-tag+.baby-tag{background:#fce4ec;color:#d63384}
+
+.care-status-bar{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.care-badge{font-size:10px;padding:2px 7px;border-radius:6px;display:flex;align-items:center;gap:3px;font-weight:500}
+.care-done{background:#e8f5e9;color:#2e7d32}
+.care-done::before{content:'✓';font-size:9px}
+.care-pending{background:#fff3e0;color:#ef6c00}
+.care-pending::before{content:'○';font-size:9px}
+.care-overdue{background:#ffebee;color:#c62828}
+.care-overdue::before{content:'!';font-size:9px;font-weight:700}
+
+.bed-card-actions{display:flex;gap:6px}
+.btn-card{flex:1;padding:7px 0;border-radius:8px;border:none;font-size:12px;cursor:pointer;transition:all .2s;font-weight:500;text-align:center}
+.btn-primary{background:linear-gradient(135deg,#d63384,#c2185b);color:white}
+.btn-primary:hover{box-shadow:0 4px 12px rgba(214,51,132,.3)}
+.btn-secondary{background:#f5f5f5;color:#666}
+.btn-secondary:hover{background:#eee}
+
+.empty-card .room-num{color:#2196f3}
+.empty-card .price{font-size:17px;font-weight:700;color:#333;margin:6px 0}
+.empty-card .room-desc{font-size:11px;color:#888;margin-bottom:10px}
+.empty-card .btn-card{background:#e3f2fd;color:#2196f3}
+.empty-card .btn-card:hover{background:#bbdefb}
+
+/* ============ 工作台 ============ */
+.workspace-header{display:flex;align-items:center;justify-content:space-between;background:white;padding:14px 20px;border-radius:14px;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.workspace-header-left{display:flex;align-items:center;gap:14px}
+.back-btn{width:34px;height:34px;border-radius:50%;background:#f5f5f5;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#666;font-size:15px}
+.back-btn:hover{background:#eee;color:#d63384}
+.patient-header{display:flex;align-items:center;gap:12px}
+.patient-avatar{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#fce4ec,#f8bbd0);display:flex;align-items:center;justify-content:center;color:#d63384;font-size:18px;font-weight:700}
+.patient-info h2{font-size:17px;font-weight:700;color:#333;display:flex;align-items:center;gap:8px}
+.patient-info h2 .tag{font-size:11px;font-weight:500;padding:2px 8px;border-radius:10px;background:#fce4ec;color:#d63384}
+.patient-info .meta{font-size:12px;color:#888;margin-top:4px;display:flex;gap:14px;flex-wrap:wrap}
+.patient-info .meta span{display:flex;align-items:center;gap:4px}
+.patient-info .meta .label{color:#aaa}
+
+.workspace-header-right{display:none}
+
+.workspace-body{display:flex;gap:14px}
+
+/* 左侧导航 */
+.sidebar-nav{width:190px;background:white;border-radius:14px;padding:10px 0;box-shadow:0 1px 6px rgba(0,0,0,.06);flex-shrink:0;align-self:flex-start}
+.sidebar-nav .nav-title{font-size:11px;font-weight:600;color:#aaa;padding:0 14px 6px;text-transform:uppercase;letter-spacing:1px}
+.sidebar-nav .nav-item{display:flex;align-items:center;gap:8px;padding:8px 14px;font-size:12px;color:#555;cursor:pointer;transition:all .2s;border-left:3px solid transparent;position:relative}
+.sidebar-nav .nav-item:hover{background:#fafafa;color:#d63384}
+.sidebar-nav .nav-item.active{background:#fce4ec;color:#c2185b;border-left-color:#d63384;font-weight:600}
+.sidebar-nav .nav-item .nav-icon{font-size:15px;width:18px;text-align:center}
+.nav-badge{position:absolute;right:12px;font-size:10px;min-width:18px;height:18px;border-radius:50%;background:#f44336;color:white;display:flex;align-items:center;justify-content:center;font-weight:700}
+
+/* 主内容 */
+.main-content{flex:1;min-width:0}
+.content-card{background:white;border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.content-card-title{font-size:14px;font-weight:600;color:#333;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between}
+.content-card-title .subtitle{font-size:11px;font-weight:400;color:#aaa}
+
+/* 宝宝切换标签 */
+.baby-tabs{display:flex;gap:6px;margin-bottom:14px}
+.baby-tab{padding:8px 16px;border-radius:10px;border:1px solid #e0e0e0;background:#fafafa;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s}
+.baby-tab:hover{border-color:#d63384;color:#d63384}
+.baby-tab.active{background:#fce4ec;border-color:#d63384;color:#c2185b;font-weight:600}
+.baby-tab .baby-avatar-sm{width:24px;height:24px;border-radius:50%;background:#e3f2fd;display:flex;align-items:center;justify-content:center;font-size:14px}
+.baby-tab .baby-avatar-sm.girl{background:#fce4ec}
+
+/* 记录工具栏 */
+.record-toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.record-toolbar .date-range{display:flex;align-items:center;gap:6px}
+.record-toolbar input[type="date"]{padding:6px 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:12px}
+.record-toolbar .spacer{flex:1}
+
+/* 表格 */
+.record-table{width:100%;border-collapse:separate;border-spacing:0;font-size:12px}
+.record-table th{background:#fafafa;color:#666;font-weight:600;padding:9px 7px;text-align:left;border-bottom:2px solid #f0f0f0;position:sticky;top:0;white-space:nowrap;font-size:11px}
+.record-table td{padding:9px 7px;border-bottom:1px solid #f5f5f5;color:#444;vertical-align:top}
+.record-table tr:hover td{background:#fafafa}
+.record-table .cell-time{color:#888;font-size:11px;white-space:nowrap}
+.record-table .cell-value{font-weight:500}
+.record-table .cell-normal{color:#2e7d32}
+.record-table .cell-warning{color:#f44336;font-weight:600}
+.record-table .cell-empty{color:#ccc;font-style:italic}
+.record-table .signature{color:#888;font-size:11px}
+.record-table .actions{display:flex;gap:5px;justify-content:center}
+.record-table .actions button{padding:3px 8px;border-radius:6px;border:none;font-size:11px;cursor:pointer}
+.btn-edit{background:#e3f2fd;color:#2196f3}
+.btn-edit:hover{background:#bbdefb}
+.btn-delete{background:#ffebee;color:#f44336}
+.btn-delete:hover{background:#ffcdd2}
+.table-scroll{overflow-x:auto;border-radius:10px;border:1px solid #f0f0f0}
+
+/* 按钮 */
+.btn{padding:7px 16px;border-radius:8px;border:none;font-size:12px;cursor:pointer;font-weight:500;transition:all .2s}
+.btn-main{background:linear-gradient(135deg,#d63384,#c2185b);color:white}
+.btn-main:hover{box-shadow:0 4px 12px rgba(214,51,132,.3)}
+.btn-outline{background:white;border:1px solid #e0e0e0;color:#666}
+.btn-outline:hover{border-color:#d63384;color:#d63384}
+.btn-icon{display:flex;align-items:center;gap:5px}
+
+/* 快速表单 */
+.quick-form{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px}
+.form-group{display:flex;flex-direction:column;gap:3px}
+.form-group label{font-size:11px;color:#666;font-weight:500}
+.form-group input,.form-group select{padding:7px 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:12px;outline:none;transition:all .2s}
+.form-group input:focus,.form-group select:focus{border-color:#d63384;box-shadow:0 0 0 3px rgba(214,51,132,.08)}
+.form-group .hint{font-size:10px;color:#aaa}
+.form-group textarea{padding:7px 10px;border:1px solid #e0e0e0;border-radius:8px;font-size:12px;outline:none;resize:vertical;min-height:50px;font-family:inherit}
+.form-section-title{font-size:12px;font-weight:600;color:#d63384;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid #fce4ec}
+.form-actions{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.btn-save{background:linear-gradient(135deg,#d63384,#c2185b);color:white;padding:9px 24px}
+.btn-save:hover{box-shadow:0 4px 12px rgba(214,51,132,.3)}
+.btn-cancel{background:#f5f5f5;color:#666;padding:9px 20px}
+.btn-cancel:hover{background:#eee}
+
+/* 右侧面板 */
+.right-panel{width:220px;flex-shrink:0;display:flex;flex-direction:column;gap:14px}
+.panel-card{background:white;border-radius:14px;padding:14px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.panel-card-title{font-size:12px;font-weight:600;color:#333;margin-bottom:10px;display:flex;align-items:center;gap:5px}
+.panel-item{display:flex;justify-content:space-between;font-size:11px;padding:5px 0;border-bottom:1px solid #f5f5f5}
+.panel-item:last-child{border-bottom:none}
+.panel-item .label{color:#888}
+.panel-item .value{color:#333;font-weight:500}
+.panel-item .value.warning{color:#f44336}
+
+.baby-list{display:flex;flex-direction:column;gap:8px}
+.baby-card-mini{display:flex;align-items:center;gap:10px;padding:8px;border-radius:10px;background:#fafafa;cursor:pointer;transition:all .2s;border:2px solid transparent}
+.baby-card-mini:hover{background:#fce4ec;border-color:#f8bbd0}
+.baby-card-mini.active{background:#fce4ec;border-color:#d63384}
+.baby-card-mini .baby-icon{width:32px;height:32px;border-radius:50%;background:#e3f2fd;display:flex;align-items:center;justify-content:center;font-size:16px}
+.baby-card-mini .baby-icon.girl{background:#fce4ec}
+.baby-card-mini .baby-info{flex:1}
+.baby-card-mini .baby-info .name{font-size:12px;font-weight:600;color:#333}
+.baby-card-mini .baby-info .detail{font-size:11px;color:#888;margin-top:1px}
+.baby-card-mini .baby-info .tag{font-size:10px;color:#2196f3;margin-top:2px}
+
+.vitals-section{margin-top:10px;padding-top:10px;border-top:1px solid #f5f5f5}
+.vitals-section-title{font-size:11px;font-weight:600;color:#d63384;margin-bottom:6px}
+.vitals-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.vitals-grid .panel-item{padding:3px 0;border-bottom:none;font-size:11px}
+
+.jaundice-chart{height:200px;background:#fafafa;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-direction:column;color:#aaa;margin-top:10px}
+.jaundice-chart .big{font-size:36px;margin-bottom:8px}
+
+/* 时间轴视图 */
+.timeline-view{padding:20px 0;position:relative}
+.timeline-date-divider{display:flex;align-items:center;gap:12px;margin:24px 0 16px;font-size:13px;font-weight:600;color:#555}
+.timeline-date-divider::before{content:'';flex:1;height:1px;background:#e0e0e0}
+.timeline-date-divider::after{content:'';flex:1;height:1px;background:#e0e0e0}
+.timeline-date-divider:first-child{margin-top:0}
+.timeline-item{display:flex;gap:16px;margin-bottom:20px;position:relative}
+.timeline-item::before{content:'';position:absolute;left:23px;top:0;bottom:-20px;width:2px;background:#e0e0e0}
+.timeline-item:last-child::before{display:none}
+.timeline-item:last-child{margin-bottom:0}
+.timeline-dot{flex-shrink:0;width:16px;height:16px;border-radius:50%;background:#d63384;border:3px solid #fce4ec;margin-top:6px;position:relative;z-index:1}
+.timeline-dot.night{background:#5c6bc0;border-color:#e8eaf6}
+.timeline-dot.warning{background:#f44336;border-color:#ffebee}
+.timeline-card{flex:1;background:#fafafa;border-radius:12px;padding:14px;border:1px solid #f0f0f0;transition:all .2s}
+.timeline-card:hover{background:#fff;border-color:#e0e0e0;box-shadow:0 2px 8px rgba(0,0,0,.06)}
+.timeline-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.timeline-card-time{font-size:13px;font-weight:600;color:#333;display:flex;align-items:center;gap:6px}
+.timeline-card-time .tag{font-size:10px;padding:2px 8px;border-radius:8px;background:#e3f2fd;color:#2196f3;font-weight:500}
+.timeline-card-time .tag-night{background:#e8eaf6;color:#5c6bc0}
+.timeline-card-time .tag-warning{background:#ffebee;color:#f44336}
+.timeline-card-signer{font-size:11px;color:#888}
+.timeline-vitals{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.timeline-vital{font-size:11px;padding:4px 10px;border-radius:8px;background:#e8f5e9;color:#2e7d32;font-weight:500}
+.timeline-vital.warning{background:#ffebee;color:#c62828}
+.timeline-vital.temp{background:#fff3e0;color:#ef6c00}
+.timeline-vital.vital-normal{background:#e3f2fd;color:#2196f3}
+.timeline-section-title{font-size:11px;font-weight:600;color:#888;margin:8px 0 4px;text-transform:uppercase;letter-spacing:1px}
+.timeline-section-content{font-size:12px;color:#555;line-height:1.6}
+.timeline-section-content .label{color:#999;margin-right:4px}
+.timeline-section-content .value{font-weight:500}
+.timeline-actions{display:flex;gap:6px;margin-top:10px;justify-content:flex-end}
+.timeline-actions button{padding:4px 12px;border-radius:6px;border:none;font-size:11px;cursor:pointer}
+.timeline-actions .btn-edit{background:#e3f2fd;color:#2196f3}
+.timeline-actions .btn-edit:hover{background:#bbdefb}
+.timeline-actions .btn-delete{background:#ffebee;color:#f44336}
+.timeline-actions .btn-delete:hover{background:#ffcdd2}
+.timeline-mini-chart{display:flex;align-items:flex-end;gap:4px;height:60px;margin-top:8px;padding:8px;background:#fff;border-radius:8px}
+.timeline-mini-bar{flex:1;background:#fce4ec;border-radius:4px 4px 0 0;min-height:4px;position:relative}
+.timeline-mini-bar::after{content:attr(data-val);position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:9px;color:#888;white-space:nowrap}
+.timeline-mini-bar:hover{background:#d63384}
+.timeline-mini-bar.warning{background:#ffcdd2}
+.timeline-mini-bar.warning:hover{background:#f44336}
+
+@media(max-width:1200px){.right-panel{display:none}}
+@media(max-width:900px){.sidebar-nav{display:none}.workspace-body{flex-direction:column}}
+</style>
+</head>
+<body>
+
+<!-- 顶部 -->
+<div class="topbar">
+<div class="topbar-left">
+<div class="logo">🌸 月子中心智慧护理</div>
+<div class="topbar-tabs">
+<div class="topbar-tab active" onclick="showPage('beds')">床位列表</div>
+<div class="topbar-tab" onclick="showPage('beds')" style="color:rgba(255,255,255,.5);cursor:not-allowed">病区事务</div>
+<div class="topbar-tab" onclick="showPage('beds')" style="color:rgba(255,255,255,.5);cursor:not-allowed">护理文书</div>
+</div>
+</div>
+<div class="topbar-right">
+<span>📍 嘉善县第一人民医院 · 母婴照护二病区</span>
+<span>🕐 2026-03-18 10:49</span>
+<div class="user"><div class="avatar-sm">邱</div><span>邱婷艳</span></div>
+</div>
+</div>
+
+<!-- ============ 床位牌 ============ -->
+<div class="page" id="page-beds">
+<div class="bed-filter-bar">
+<select><option>全部状态</option><option>已入住</option><option>空房</option><option>预约</option><option>维修中</option></select>
+<select><option>全部楼层</option><option>2F</option><option>3F</option></select>
+<select><option>全部房型</option><option>VIP套房</option><option>豪华房</option></select>
+<input type="text" placeholder="房间号 / 宝妈姓名 / 预约人">
+<div class="stats-bar">
+<span><span class="dot dot-occupied"></span>已入住 8</span>
+<span><span class="dot dot-empty"></span>空房 7</span>
+<span><span class="dot dot-booked"></span>预约 7</span>
+<span><span class="dot dot-maintenance"></span>维修 2</span>
+<span><span class="dot dot-alert"></span>待处理 3</span>
+</div>
+</div>
+
+<div class="floor-section">
+<div class="floor-title"><span class="floor-icon">📍</span> 2F 母婴照护区 <span class="floor-count">8间 · 入住4 · 空房2 · 预约1 · 维修1</span></div>
+<div class="bed-grid">
+<div class="bed-card occupied has-alert" onclick="openWorkspace('201','张晓明','32岁','产后18天','05-01~06-28','剩余17天',2)">
+<div class="bed-card-header">
+<span class="room-num">201</span>
+<span class="room-tag tag-occupied">已入住</span>
+</div>
+<div class="room-info">VIP套房 · 65㎡</div>
+<div class="mom-info">
+<div class="mom-avatar">张</div>
+<div class="mom-detail">
+<div class="mom-name">张晓明 <span class="age">32岁</span></div>
+<div class="mom-meta">产后18天 · 2宝</div>
+<div class="mom-date">05-01 ~ 06-28 <span style="color:#d63384;font-weight:600">剩余17天</span></div>
+</div>
+</div>
+<div class="baby-tags">
+<span class="baby-tag">👶 大宝 · 女 · 18天</span>
+<span class="baby-tag">👶 二宝 · 女 · 18天</span>
+</div>
+<div class="care-status-bar">
+<span class="care-badge care-done">产后护理</span>
+<span class="care-badge care-done">新生儿A</span>
+<span class="care-badge care-pending">新生儿B</span>
+<span class="care-badge care-overdue">黄疸监测</span>
+</div>
+<div class="bed-card-actions">
+<button class="btn-card btn-primary">写护理记录</button>
+<button class="btn-card btn-secondary">查看详情</button>
+</div>
+</div>
+
+<div class="bed-card occupied" onclick="openWorkspace('202','李婷','29岁','产后12天','05-15~06-20','剩余9天',1)">
+<div class="bed-card-header">
+<span class="room-num">202</span>
+<span class="room-tag tag-occupied">已入住</span>
+</div>
+<div class="room-info">豪华房 · 50㎡</div>
+<div class="mom-info">
+<div class="mom-avatar">李</div>
+<div class="mom-detail">
+<div class="mom-name">李婷 <span class="age">29岁</span></div>
+<div class="mom-meta">产后12天 · 1宝</div>
+<div class="mom-date">05-15 ~ 06-20 <span style="color:#d63384;font-weight:600">剩余9天</span></div>
+</div>
+</div>
+<div class="baby-tags">
+<span class="baby-tag">👶 女 · 12天</span>
+</div>
+<div class="care-status-bar">
+<span class="care-badge care-done">产后护理</span>
+<span class="care-badge care-pending">新生儿护理</span>
+<span class="care-badge care-done">体温单</span>
+</div>
+<div class="bed-card-actions">
+<button class="btn-card btn-primary">写护理记录</button>
+<button class="btn-card btn-secondary">查看详情</button>
+</div>
+</div>
+
+<div class="bed-card empty empty-card">
+<div class="bed-card-header"><span class="room-num">203</span><span class="room-tag tag-empty">空房</span></div>
+<div class="room-info">VIP套房 · 65㎡</div>
+<div class="price">¥1980/天</div>
+<div class="room-desc">南向 · 带独卫 · 可预约</div>
+<div class="bed-card-actions"><button class="btn-card">预约登记</button></div>
+</div>
+
+<div class="bed-card empty empty-card">
+<div class="bed-card-header"><span class="room-num">204</span><span class="room-tag tag-empty">空房</span></div>
+<div class="room-info">VIP套房 · 65㎡</div>
+<div class="price">¥1980/天</div>
+<div class="room-desc">南向 · 带独卫 · 可预约</div>
+<div class="bed-card-actions"><button class="btn-card">预约登记</button></div>
+</div>
+
+<div class="bed-card occupied" onclick="openWorkspace('207','陈静','35岁','产后3天','05-20~06-18','剩余3天',1)">
+<div class="bed-card-header">
+<span class="room-num">207</span>
+<span class="room-tag tag-occupied">已入住</span>
+</div>
+<div class="room-info">豪华房 · 50㎡</div>
+<div class="mom-info">
+<div class="mom-avatar">陈</div>
+<div class="mom-detail">
+<div class="mom-name">陈静 <span class="age">35岁</span></div>
+<div class="mom-meta">产后3天 · 1宝</div>
+<div class="mom-date">05-20 ~ 06-18 <span style="color:#ff9800;font-weight:600">剩余3天</span></div>
+</div>
+</div>
+<div class="baby-tags">
+<span class="baby-tag">👶 男 · 3天</span>
+</div>
+<div class="care-status-bar">
+<span class="care-badge care-done">产后护理</span>
+<span class="care-badge care-done">新生儿护理</span>
+<span class="care-badge care-done">体温单</span>
+</div>
+<div class="bed-card-actions">
+<button class="btn-card btn-primary">写护理记录</button>
+<button class="btn-card btn-secondary">查看详情</button>
+</div>
+</div>
+
+<div class="bed-card maintenance">
+<div class="bed-card-header"><span class="room-num">208</span><span class="room-tag tag-maintenance">维修中</span></div>
+<div class="room-info">豪华房 · 50㎡</div>
+<div style="font-size:13px;color:#333;font-weight:600;margin:6px 0">空调不制冷</div>
+<div class="room-desc">工程处理中<br>预计明日恢复</div>
+<div class="bed-card-actions"><button class="btn-card btn-secondary">查看进度</button></div>
+</div>
+
+<div class="bed-card booked">
+<div class="bed-card-header"><span class="room-num">206</span><span class="room-tag tag-booked">预约</span></div>
+<div class="room-info">VIP套房 · 65㎡</div>
+<div class="mom-info">
+<div class="mom-avatar">王</div>
+<div class="mom-detail">
+<div class="mom-name">王芳(预)</div>
+<div class="mom-meta">预2026-06-12入住</div>
+<div class="mom-date">待确认入住</div>
+</div>
+</div>
+<div class="bed-card-actions"><button class="btn-card btn-secondary">确认到店</button></div>
+</div>
+</div>
+</div>
+
+<div class="floor-section">
+<div class="floor-title"><span class="floor-icon">📍</span> 3F 母婴照护区 <span class="floor-count">8间 · 入住4 · 空房2 · 预约1 · 维修1</span></div>
+<div class="bed-grid">
+<div class="bed-card occupied has-alert" onclick="openWorkspace('301','徐银银','23岁','产后20天','02-15~03-18','今日出院',1)">
+<div class="bed-card-header">
+<span class="room-num">301</span>
+<span class="room-tag tag-occupied">已入住</span>
+</div>
+<div class="room-info">VIP套房 · 65㎡</div>
+<div class="mom-info">
+<div class="mom-avatar">徐</div>
+<div class="mom-detail">
+<div class="mom-name">徐银银 <span class="age">23岁</span></div>
+<div class="mom-meta">产后20天 · 1宝</div>
+<div class="mom-date">02-15 ~ 03-18 <span style="color:#f44336;font-weight:600">今日出院</span></div>
+</div>
+</div>
+<div class="baby-tags">
+<span class="baby-tag">👶 女 · 20天</span>
+</div>
+<div class="care-status-bar">
+<span class="care-badge care-done">产后护理</span>
+<span class="care-badge care-done">新生儿护理</span>
+<span class="care-badge care-overdue">出院评估</span>
+</div>
+<div class="bed-card-actions">
+<button class="btn-card btn-primary">写护理记录</button>
+<button class="btn-card btn-secondary">查看详情</button>
+</div>
+</div>
+
+<div class="bed-card occupied" onclick="openWorkspace('302','肖惠玲','34岁','产后4天','03-03~03-31','剩余28天',1)">
+<div class="bed-card-header">
+<span class="room-num">302</span>
+<span class="room-tag tag-occupied">已入住</span>
+</div>
+<div class="room-info">豪华房 · 50㎡</div>
+<div class="mom-info">
+<div class="mom-avatar">肖</div>
+<div class="mom-detail">
+<div class="mom-name">肖惠玲 <span class="age">34岁</span></div>
+<div class="mom-meta">产后4天 · 1宝</div>
+<div class="mom-date">03-03 ~ 03-31 <span style="color:#d63384;font-weight:600">剩余28天</span></div>
+</div>
+</div>
+<div class="baby-tags">
+<span class="baby-tag">👶 男 · 4天</span>
+</div>
+<div class="care-status-bar">
+<span class="care-badge care-done">产后护理</span>
+<span class="care-badge care-pending">新生儿护理</span>
+<span class="care-badge care-done">体温单</span>
+</div>
+<div class="bed-card-actions">
+<button class="btn-card btn-primary">写护理记录</button>
+<button class="btn-card btn-secondary">查看详情</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ============ 护理文书工作台 ============ -->
+<div class="page hidden" id="page-workspace">
+
+<!-- 患者头部 -->
+<div class="workspace-header">
+<div class="workspace-header-left">
+<button class="back-btn" onclick="backToBeds()">←</button>
+<div class="patient-header">
+<div class="patient-avatar" id="ws-avatar">徐</div>
+<div class="patient-info">
+<h2 id="ws-name">徐银银 <span class="tag">MY-07床</span></h2>
+<div class="meta" id="ws-meta">
+<span><span class="label">住院号</span> 202402179966</span>
+<span><span class="label">首次入区</span> 2026-02-15 12:01</span>
+<span><span class="label">住院天数</span> 20天</span>
+<span><span class="label">过敏</span> 无过敏</span>
+<span style="color:#f44336;font-weight:600">⚠ 今日出院</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div class="workspace-body">
+<!-- 左侧导航 -->
+<div class="sidebar-nav">
+<div class="nav-title">宝妈文书</div>
+<div class="nav-item active" onclick="switchDocType('postpartum')">
+<span class="nav-icon">🤱</span> 产后护理记录单
+</div>
+
+<div class="nav-item" onclick="switchDocType('maternal_assessment')">
+<span class="nav-icon">📋</span> 宝妈评估单
+</div>
+<div class="nav-item" onclick="switchDocType('health_edu')">
+<span class="nav-icon">📖</span> 健康教育记录
+</div>
+<div class="nav-item" onclick="switchDocType('handover')">
+<span class="nav-icon">🔄</span> 交接班记录
+</div>
+<div class="nav-item" onclick="switchDocType('discharge')">
+<span class="nav-icon">🏠</span> 出院评估
+<span class="nav-badge">1</span>
+</div>
+
+<div style="height:10px"></div>
+<div class="nav-title">新生儿文书</div>
+<div class="nav-item" onclick="switchDocType('neonatal')">
+<span class="nav-icon">👶</span> 新生儿护理记录单
+</div>
+
+<div class="nav-item" onclick="switchDocType('jaundice')">
+<span class="nav-icon">🟡</span> 新生儿黄疸监测
+</div>
+<div class="nav-item" onclick="switchDocType('feeding')">
+<span class="nav-icon">🍼</span> 新生儿喂养记录
+</div>
+<div class="nav-item" onclick="switchDocType('weight')">
+<span class="nav-icon">⚖</span> 新生儿体重监测
+</div>
+<div class="nav-item" onclick="switchDocType('vaccine')">
+<span class="nav-icon">💉</span> 新生儿疫苗接种
+</div>
+<div class="nav-item" onclick="switchDocType('hearing')">
+<span class="nav-icon">👂</span> 新生儿听力筛查
+</div>
+<div class="nav-item" onclick="switchDocType('screening')">
+<span class="nav-icon">🔬</span> 新生儿疾病筛查
+</div>
+<div class="nav-item" onclick="switchDocType('apgar')">
+<span class="nav-icon">⭐</span> 新生儿Apgar评分
+</div>
+<div class="nav-item" onclick="switchDocType('neonatal_assessment')">
+<span class="nav-icon">📋</span> 新生儿护理评估
+</div>
+</div>
+
+<!-- 主内容 -->
+<div class="main-content" id="main-content">
+
+<!-- 产后护理记录单 -->
+<div id="doc-postpartum">
+<div class="content-card">
+<div class="content-card-title">
+<span>🤱 产后护理记录单</span>
+<div class="view-toggle"><button class="active" onclick="switchPostpartumView('table')">表格</button><button onclick="switchPostpartumView('timeline')">时间轴</button></div>
+</div>
+<div class="record-toolbar">
+<div class="date-range">
+<input type="date" value="2026-02-15">
+<span>~</span>
+<input type="date" value="2026-03-18">
+</div>
+<div class="spacer"></div>
+<button class="btn btn-main">➕ 新增</button>
+</div>
+
+<!-- 表格视图 -->
+<div id="postpartum-table">
+<div class="table-scroll">
+<table class="record-table">
+<thead>
+<tr>
+<th>记录时间</th><th>体温℃</th><th>脉搏<br>次/分</th><th>呼吸<br>次/分</th>
+<th>血压<br>mmHg</th><th>SpO₂%</th><th>宫底</th><th>阴道流血<br>颜色</th>
+<th>伤口</th><th>乳汁</th><th>乳胀</th><th>排尿</th><th>饮食</th>
+<th>护理措施</th><th>病情变化</th><th>签名</th><th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cell-time">2026-03-07<br>09:57</td>
+<td class="cell-value">36.6</td><td>80</td><td>20</td>
+<td class="cell-empty">—</td><td class="cell-empty">—</td>
+<td class="cell-normal">正常</td><td class="cell-normal">暗红</td><td class="cell-normal">无渗</td>
+<td class="cell-normal">少</td><td class="cell-normal">无</td><td class="cell-normal">自解</td><td>软食</td>
+<td>H、I、K、L</td>
+<td>入月子中心给予产后相关知识宣教及指导，月子中心相关制度的宣教，表示理解及配合。</td>
+<td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-03-06<br>19:00</td>
+<td class="cell-value">36.6</td><td>75</td><td>20</td>
+<td class="cell-empty">—</td><td class="cell-empty">—</td>
+<td class="cell-normal">正常</td><td class="cell-normal">暗红</td><td class="cell-normal">无渗</td>
+<td class="cell-normal">少</td><td class="cell-normal">无</td><td class="cell-normal">自解</td>
+<td class="cell-empty">—</td><td class="cell-empty">—</td><td class="cell-empty">—</td>
+<td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-03-06<br>10:47</td>
+<td class="cell-value">36.5</td><td>70</td><td>18</td>
+<td class="cell-empty">—</td><td class="cell-empty">—</td>
+<td class="cell-normal">正常</td><td class="cell-normal">暗红</td><td class="cell-normal">无渗</td>
+<td class="cell-normal">少</td><td class="cell-normal">无</td><td class="cell-normal">自解</td>
+<td class="cell-empty">—</td><td class="cell-empty">—</td><td class="cell-empty">—</td>
+<td class="signature">沈心雨</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<!-- 时间轴视图 -->
+<div id="postpartum-timeline" class="hidden">
+<div class="timeline-view">
+<div class="timeline-date-divider">📅 2026年03月07日（第20天 · 今日出院）</div>
+<div class="timeline-item">
+<div class="timeline-dot"></div>
+<div class="timeline-card">
+<div class="timeline-card-header">
+<div class="timeline-card-time">09:57 <span class="tag">上午</span></div>
+<div class="timeline-card-signer">👤 邱婷艳</div>
+</div>
+<div class="timeline-vitals">
+<span class="timeline-vital temp">🌡 体温 36.6℃</span>
+<span class="timeline-vital vital-normal">💓 脉搏 80次/分</span>
+<span class="timeline-vital vital-normal">🌬 呼吸 20次/分</span>
+</div>
+<div class="timeline-section-title">📋 专科评估</div>
+<div class="timeline-section-content">
+<span class="label">宫底：</span><span class="value">正常</span> · 
+<span class="label">阴道流血：</span><span class="value">暗红</span> · 
+<span class="label">伤口：</span><span class="value">无渗</span> · 
+<span class="label">乳汁：</span><span class="value">少</span> · 
+<span class="label">乳胀：</span><span class="value">无</span> · 
+<span class="label">排尿：</span><span class="value">自解</span> · 
+<span class="label">饮食：</span><span class="value">软食</span>
+</div>
+<div class="timeline-section-title">📝 护理措施</div>
+<div class="timeline-section-content">H、I、K、L</div>
+<div class="timeline-section-title">🔍 病情变化</div>
+<div class="timeline-section-content">入月子中心给予产后相关知识宣教及指导，月子中心相关制度的宣教，表示理解及配合。</div>
+<div class="timeline-actions">
+<button class="btn-edit">编辑</button>
+<button class="btn-delete">作废</button>
+</div>
+</div>
+</div>
+
+<div class="timeline-date-divider">📅 2026年03月06日（第19天）</div>
+<div class="timeline-item">
+<div class="timeline-dot night"></div>
+<div class="timeline-card">
+<div class="timeline-card-header">
+<div class="timeline-card-time">19:00 <span class="tag tag-night">🌙 夜间</span></div>
+<div class="timeline-card-signer">👤 邱婷艳</div>
+</div>
+<div class="timeline-vitals">
+<span class="timeline-vital temp">🌡 体温 36.6℃</span>
+<span class="timeline-vital vital-normal">💓 脉搏 75次/分</span>
+<span class="timeline-vital vital-normal">🌬 呼吸 20次/分</span>
+</div>
+<div class="timeline-section-title">📋 专科评估</div>
+<div class="timeline-section-content">
+<span class="label">宫底：</span><span class="value">正常</span> · 
+<span class="label">阴道流血：</span><span class="value">暗红</span> · 
+<span class="label">伤口：</span><span class="value">无渗</span> · 
+<span class="label">乳汁：</span><span class="value">少</span> · 
+<span class="label">乳胀：</span><span class="value">无</span> · 
+<span class="label">排尿：</span><span class="value">自解</span>
+</div>
+<div class="timeline-section-title">📝 体温趋势（近3次）</div>
+<div class="timeline-mini-chart">
+<div class="timeline-mini-bar" style="height:70%" data-val="36.5"></div>
+<div class="timeline-mini-bar" style="height:72%" data-val="36.6"></div>
+<div class="timeline-mini-bar" style="height:72%" data-val="36.6"></div>
+</div>
+<div class="timeline-actions">
+<button class="btn-edit">编辑</button>
+<button class="btn-delete">作废</button>
+</div>
+</div>
+</div>
+<div class="timeline-item">
+<div class="timeline-dot"></div>
+<div class="timeline-card">
+<div class="timeline-card-header">
+<div class="timeline-card-time">10:47 <span class="tag">上午</span></div>
+<div class="timeline-card-signer">👤 沈心雨</div>
+</div>
+<div class="timeline-vitals">
+<span class="timeline-vital temp">🌡 体温 36.5℃</span>
+<span class="timeline-vital vital-normal">💓 脉搏 70次/分</span>
+<span class="timeline-vital vital-normal">🌬 呼吸 18次/分</span>
+</div>
+<div class="timeline-section-title">📋 专科评估</div>
+<div class="timeline-section-content">
+<span class="label">宫底：</span><span class="value">正常</span> · 
+<span class="label">阴道流血：</span><span class="value">暗红</span> · 
+<span class="label">伤口：</span><span class="value">无渗</span> · 
+<span class="label">乳汁：</span><span class="value">少</span> · 
+<span class="label">乳胀：</span><span class="value">无</span> · 
+<span class="label">排尿：</span><span class="value">自解</span>
+</div>
+<div class="timeline-actions">
+<button class="btn-edit">编辑</button>
+<button class="btn-delete">作废</button>
+</div>
+</div>
+</div>
+
+<div class="timeline-date-divider">📅 2026年03月05日（第18天）</div>
+<div class="timeline-item">
+<div class="timeline-dot"></div>
+<div class="timeline-card">
+<div class="timeline-card-header">
+<div class="timeline-card-time">08:00 <span class="tag">上午</span></div>
+<div class="timeline-card-signer">👤 邱婷艳</div>
+</div>
+<div class="timeline-vitals">
+<span class="timeline-vital temp">🌡 体温 36.7℃</span>
+<span class="timeline-vital vital-normal">💓 脉搏 72次/分</span>
+<span class="timeline-vital vital-normal">🌬 呼吸 19次/分</span>
+</div>
+<div class="timeline-section-title">📋 专科评估</div>
+<div class="timeline-section-content">
+<span class="label">宫底：</span><span class="value">正常</span> · 
+<span class="label">阴道流血：</span><span class="value">暗红</span> · 
+<span class="label">伤口：</span><span class="value">无渗</span> · 
+<span class="label">乳汁：</span><span class="value">中</span> · 
+<span class="label">乳胀：</span><span class="value">轻度</span> · 
+<span class="label">排尿：</span><span class="value">自解</span>
+</div>
+<div class="timeline-section-title">📝 体温趋势（近3次）</div>
+<div class="timeline-mini-chart">
+<div class="timeline-mini-bar" style="height:68%" data-val="36.4"></div>
+<div class="timeline-mini-bar" style="height:70%" data-val="36.5"></div>
+<div class="timeline-mini-bar" style="height:72%" data-val="36.7"></div>
+</div>
+<div class="timeline-actions">
+<button class="btn-edit">编辑</button>
+<button class="btn-delete">作废</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 新生儿护理记录单 -->
+<div id="doc-neonatal" class="hidden">
+<div class="content-card">
+<div class="content-card-title">
+<span>👶 母婴同室新生儿护理记录单</span>
+<div class="view-toggle"><button class="active">表格</button><button>时间轴</button></div>
+</div>
+<div class="baby-tabs" id="neonatal-baby-tabs">
+<div class="baby-tab active" onclick="switchBabyTab(0)"><span class="baby-avatar-sm girl">👶</span> 徐大宝 · 女 · 18天</div>
+<div class="baby-tab" onclick="switchBabyTab(1)"><span class="baby-avatar-sm girl">👶</span> 徐二宝 · 女 · 18天</div>
+</div>
+<div class="record-toolbar">
+<div class="date-range">
+<input type="date" value="2026-02-15">
+<span>~</span>
+<input type="date" value="2026-03-18">
+</div>
+<div class="spacer"></div>
+<button class="btn btn-main">➕ 新增</button>
+</div>
+<div class="table-scroll">
+<table class="record-table">
+<thead>
+<tr>
+<th>记录时间</th><th>血糖<br>mmol/L</th><th>SpO₂%</th><th>体温℃</th>
+<th>肤色</th><th>呼吸</th><th>哭声</th><th>肌肉张力</th>
+<th>母乳<br>喂养</th><th>人工<br>喂养</th><th>加奶</th><th>呕吐</th>
+<th>大便</th><th>小便</th><th>脐部</th><th>皮肤粘膜</th>
+<th>抚触</th><th>智能<br>训练</th><th>沐浴</th><th>病情变化</th><th>签名</th><th>操作</th>
+</tr>
+</thead>
+<tbody id="neonatal-table-body">
+<tr>
+<td class="cell-time">2026-02-15<br>12:01</td>
+<td class="cell-empty">—</td><td class="cell-empty">—</td><td class="cell-value">36.0</td>
+<td class="cell-normal">红润</td><td class="cell-normal">平稳</td><td class="cell-normal">响亮</td>
+<td class="cell-normal">四肢活动好</td><td class="cell-normal">好</td><td class="cell-normal">好</td>
+<td class="cell-normal">有</td><td class="cell-normal">无</td><td class="cell-normal">黄色</td>
+<td class="cell-normal">已解</td><td class="cell-normal">干燥</td><td class="cell-normal">无异常</td>
+<td class="cell-empty">—</td><td class="cell-empty">—</td><td class="cell-empty">—</td>
+<td class="cell-empty">—</td><td class="signature">杨璐敏</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- 新生儿黄疸监测 -->
+<div id="doc-jaundice" class="hidden">
+<div class="content-card">
+<div class="content-card-title">
+<span>🟡 新生儿黄疸监测记录</span>
+<span class="subtitle">经皮胆红素值 (mg/dL)</span>
+</div>
+<div class="baby-tabs" id="jaundice-baby-tabs">
+<div class="baby-tab active" onclick="switchBabyTab(0)"><span class="baby-avatar-sm girl">👶</span> 徐大宝 · 女</div>
+<div class="baby-tab" onclick="switchBabyTab(1)"><span class="baby-avatar-sm girl">👶</span> 徐二宝 · 女</div>
+</div>
+<div class="record-toolbar">
+<div class="date-range">
+<input type="date" value="2026-02-15">
+<span>~</span>
+<input type="date" value="2026-03-18">
+</div>
+<div class="spacer"></div>
+<button class="btn btn-main">➕ 新增</button>
+</div>
+<div class="jaundice-chart">
+<div class="big">📈</div>
+<div style="font-size:14px;margin-bottom:4px">黄疸值趋势图</div>
+<div style="font-size:12px">展示经皮胆红素每日测量值及参考曲线</div>
+</div>
+<div class="table-scroll" style="margin-top:14px">
+<table class="record-table">
+<thead>
+<tr>
+<th>测量时间</th><th>前额<br>(mg/dL)</th><th>胸部<br>(mg/dL)</th><th>平均值</th>
+<th>风险分区</th><th>处理措施</th><th>测量方式</th><th>签名</th><th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cell-time">2026-02-15<br>12:01</td>
+<td>5.2</td><td>4.8</td><td>5.0</td>
+<td class="cell-normal">低风险区</td>
+<td>继续监测，鼓励母乳喂养</td>
+<td>经皮测胆仪</td><td class="signature">杨璐敏</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-02-16<br>08:00</td>
+<td>8.5</td><td>7.9</td><td>8.2</td>
+<td class="cell-normal">低中风险区</td>
+<td>增加喂养频次，明日复测</td>
+<td>经皮测胆仪</td><td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-02-17<br>08:00</td>
+<td>12.3</td><td>11.5</td><td>11.9</td>
+<td class="cell-warning">高风险区</td>
+<td class="cell-warning">建议抽血查血清胆红素</td>
+<td>经皮测胆仪</td><td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- 新生儿喂养记录 -->
+<div id="doc-feeding" class="hidden">
+<div class="content-card">
+<div class="content-card-title">
+<span>🍼 新生儿喂养记录</span>
+</div>
+<div class="baby-tabs" id="feeding-baby-tabs">
+<div class="baby-tab active" onclick="switchBabyTab(0)"><span class="baby-avatar-sm girl">👶</span> 徐大宝 · 女</div>
+<div class="baby-tab" onclick="switchBabyTab(1)"><span class="baby-avatar-sm girl">👶</span> 徐二宝 · 女</div>
+</div>
+<div class="record-toolbar">
+<div class="date-range">
+<input type="date" value="2026-03-18">
+</div>
+<div class="spacer"></div>
+<button class="btn btn-main">➕ 新增</button>
+</div>
+<div class="table-scroll">
+<table class="record-table">
+<thead>
+<tr>
+<th>时间</th><th>喂养方式</th><th>母乳<br>时长(min)</th><th>配方奶<br>量(ml)</th>
+<th>吸吮情况</th><th>吐奶</th><th>溢奶</th><th>腹胀</th><th>排便</th><th>备注</th><th>签名</th><th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cell-time">03-18 02:00</td>
+<td>母乳喂养</td><td>15</td><td class="cell-empty">—</td>
+<td class="cell-normal">吸吮有力</td><td class="cell-normal">无</td><td class="cell-normal">无</td><td class="cell-normal">无</td><td class="cell-normal">无</td>
+<td>夜间唤醒喂养</td><td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">03-18 06:00</td>
+<td>母乳+配方奶</td><td>10</td><td>30</td>
+<td class="cell-normal">吸吮良好</td><td class="cell-normal">无</td><td class="cell-normal">少量</td><td class="cell-normal">无</td><td class="cell-normal">黄色软便</td>
+<td>补充喂养</td><td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">03-18 10:00</td>
+<td>母乳喂养</td><td>20</td><td class="cell-empty">—</td>
+<td class="cell-normal">吸吮有力</td><td class="cell-normal">无</td><td class="cell-normal">无</td><td class="cell-normal">无</td><td class="cell-normal">无</td>
+<td>亲喂成功</td><td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- 新生儿体重监测 -->
+<div id="doc-weight" class="hidden">
+<div class="content-card">
+<div class="content-card-title">
+<span>⚖ 新生儿体重监测</span>
+</div>
+<div class="baby-tabs" id="weight-baby-tabs">
+<div class="baby-tab active" onclick="switchBabyTab(0)"><span class="baby-avatar-sm girl">👶</span> 徐大宝 · 女</div>
+<div class="baby-tab" onclick="switchBabyTab(1)"><span class="baby-avatar-sm girl">👶</span> 徐二宝 · 女</div>
+</div>
+<div class="record-toolbar">
+<div class="date-range">
+<input type="date" value="2026-02-15">
+<span>~</span>
+<input type="date" value="2026-03-18">
+</div>
+<div class="spacer"></div>
+<button class="btn btn-main">➕ 新增</button>
+</div>
+<div class="jaundice-chart">
+<div class="big">📊</div>
+<div style="font-size:14px;margin-bottom:4px">体重增长曲线</div>
+<div style="font-size:12px">出生体重 → 生理性下降 → 恢复 → 增长趋势</div>
+</div>
+<div class="table-scroll" style="margin-top:14px">
+<table class="record-table">
+<thead>
+<tr>
+<th>测量日期</th><th>体重(g)</th><th>较昨日变化</th><th>较出生变化</th>
+<th>百分位</th><th>身长(cm)</th><th>头围(cm)</th><th>胸围(cm)</th><th>备注</th><th>签名</th><th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cell-time">2026-02-15</td><td>3200</td><td class="cell-empty">—</td><td class="cell-empty">—</td><td>P50</td>
+<td>50</td><td>34</td><td>32</td>
+<td>出生体重</td><td class="signature">杨璐敏</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-02-18</td><td>2950</td><td class="cell-warning">-250g</td><td class="cell-warning">-7.8%</td><td>P40</td>
+<td>50</td><td>34</td><td>32</td>
+<td>生理性体重下降</td><td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-02-25</td><td>3350</td><td class="cell-normal">+80g</td><td class="cell-normal">+4.7%</td><td>P55</td>
+<td>51</td><td>35</td><td>33</td>
+<td>已恢复出生体重</td><td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-03-07</td><td>3850</td><td class="cell-normal">+60g</td><td class="cell-normal">+20.3%</td><td>P60</td>
+<td>53</td><td>36</td><td>34</td>
+<td>增长良好</td><td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- 新生儿疫苗接种 -->
+<div id="doc-vaccine" class="hidden">
+<div class="content-card">
+<div class="content-card-title">
+<span>💉 新生儿疫苗接种记录</span>
+</div>
+<div class="baby-tabs" id="vaccine-baby-tabs">
+<div class="baby-tab active" onclick="switchBabyTab(0)"><span class="baby-avatar-sm girl">👶</span> 徐大宝 · 女</div>
+<div class="baby-tab" onclick="switchBabyTab(1)"><span class="baby-avatar-sm girl">👶</span> 徐二宝 · 女</div>
+</div>
+<div class="record-toolbar">
+<div class="date-range">
+<input type="date" value="2026-02-15">
+<span>~</span>
+<input type="date" value="2026-03-18">
+</div>
+<div class="spacer"></div>
+<button class="btn btn-main">➕ 新增</button>
+</div>
+<div class="table-scroll">
+<table class="record-table">
+<thead>
+<tr>
+<th>接种日期</th><th>疫苗名称</th><th>剂次</th><th>接种部位</th>
+<th>批号</th><th>生产企业</th><th>接种反应</th><th>签名</th><th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cell-time">2026-02-15</td>
+<td>乙肝疫苗(酵母)</td><td>第1剂</td><td>右上臂</td>
+<td>20260101A</td><td>深圳康泰</td>
+<td class="cell-normal">无不良反应</td><td class="signature">杨璐敏</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-02-15</td>
+<td>卡介苗</td><td>第1剂</td><td>左上臂</td>
+<td>20251201B</td><td>成都生物</td>
+<td class="cell-normal">无不良反应</td><td class="signature">杨璐敏</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-02-16</td>
+<td>乙肝疫苗(酵母)</td><td>第1剂</td><td>右上臂</td>
+<td>20260101A</td><td>深圳康泰</td>
+<td class="cell-normal">无不良反应</td><td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- 新生儿听力筛查 -->
+<div id="doc-hearing" class="hidden">
+<div class="content-card">
+<div class="content-card-title">
+<span>👂 新生儿听力筛查</span>
+</div>
+<div class="baby-tabs" id="hearing-baby-tabs">
+<div class="baby-tab active" onclick="switchBabyTab(0)"><span class="baby-avatar-sm girl">👶</span> 徐大宝 · 女</div>
+<div class="baby-tab" onclick="switchBabyTab(1)"><span class="baby-avatar-sm girl">👶</span> 徐二宝 · 女</div>
+</div>
+<div class="record-toolbar">
+<div class="date-range">
+<input type="date" value="2026-02-15">
+<span>~</span>
+<input type="date" value="2026-03-18">
+</div>
+<div class="spacer"></div>
+<button class="btn btn-main">➕ 新增</button>
+</div>
+<div class="table-scroll">
+<table class="record-table">
+<thead>
+<tr>
+<th>筛查日期</th><th>筛查方式</th><th>左耳<br>结果</th><th>右耳<br>结果</th>
+<th>筛查状态</th><th>复筛建议</th><th>筛查设备</th><th>签名</th><th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cell-time">2026-02-16</td>
+<td>耳声发射(OAE)</td>
+<td class="cell-normal">通过</td><td class="cell-normal">通过</td>
+<td class="cell-normal">初筛通过</td>
+<td class="cell-empty">无需复筛</td>
+<td>Madsen AccuScreen</td><td class="signature">杨璐敏</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- 新生儿疾病筛查 -->
+<div id="doc-screening" class="hidden">
+<div class="content-card">
+<div class="content-card-title">
+<span>🔬 新生儿疾病筛查</span>
+</div>
+<div class="baby-tabs" id="screening-baby-tabs">
+<div class="baby-tab active" onclick="switchBabyTab(0)"><span class="baby-avatar-sm girl">👶</span> 徐大宝 · 女</div>
+<div class="baby-tab" onclick="switchBabyTab(1)"><span class="baby-avatar-sm girl">👶</span> 徐二宝 · 女</div>
+</div>
+<div class="record-toolbar">
+<div class="date-range">
+<input type="date" value="2026-02-15">
+<span>~</span>
+<input type="date" value="2026-03-18">
+</div>
+<div class="spacer"></div>
+<button class="btn btn-main">➕ 新增</button>
+</div>
+<div class="table-scroll">
+<table class="record-table">
+<thead>
+<tr>
+<th>采血日期</th><th>采血项目</th><th>足跟血<br>采集</th><th>送检日期</th>
+<th>结果状态</th><th>异常项目</th><th>后续处理</th><th>签名</th><th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cell-time">2026-02-18</td>
+<td>遗传代谢病筛查<br>（苯丙酮尿症/甲减/等）</td>
+<td class="cell-normal">已采集</td>
+<td>2026-02-19</td>
+<td class="cell-normal">结果未出</td>
+<td class="cell-empty">—</td>
+<td class="cell-empty">待结果通知</td>
+<td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-02-18</td>
+<td>新生儿听力筛查</td>
+<td class="cell-empty">—</td>
+<td class="cell-empty">—</td>
+<td class="cell-normal">已通过</td>
+<td class="cell-empty">—</td>
+<td class="cell-empty">—</td>
+<td class="signature">杨璐敏</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- Apgar评分 -->
+<div id="doc-apgar" class="hidden">
+<div class="content-card">
+<div class="content-card-title">
+<span>⭐ 新生儿Apgar评分</span>
+</div>
+<div class="baby-tabs" id="apgar-baby-tabs">
+<div class="baby-tab active" onclick="switchBabyTab(0)"><span class="baby-avatar-sm girl">👶</span> 徐大宝 · 女</div>
+<div class="baby-tab" onclick="switchBabyTab(1)"><span class="baby-avatar-sm girl">👶</span> 徐二宝 · 女</div>
+</div>
+<div class="record-toolbar">
+<div class="date-range">
+<input type="date" value="2026-02-15">
+<span>~</span>
+<input type="date" value="2026-03-18">
+</div>
+<div class="spacer"></div>
+<button class="btn btn-main">➕ 新增</button>
+</div>
+<div class="table-scroll">
+<table class="record-table">
+<thead>
+<tr>
+<th>评分时间</th><th>皮肤颜色<br>(0-2)</th><th>心率<br>(0-2)</th><th>反射<br>(0-2)</th>
+<th>肌张力<br>(0-2)</th><th>呼吸<br>(0-2)</th><th>总分<br>(0-10)</th><th>评估结果</th><th>签名</th><th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cell-time">出生后<br>1分钟</td>
+<td>2</td><td>2</td><td>2</td><td>1</td><td>2</td>
+<td class="cell-value">9</td>
+<td class="cell-normal">正常</td>
+<td class="signature">杨璐敏</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">出生后<br>5分钟</td>
+<td>2</td><td>2</td><td>2</td><td>2</td><td>2</td>
+<td class="cell-value">10</td>
+<td class="cell-normal">正常</td>
+<td class="signature">杨璐敏</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- 新生儿护理评估 -->
+<div id="doc-neonatal_assessment" class="hidden">
+<div class="content-card">
+<div class="content-card-title">
+<span>📋 新生儿护理评估</span>
+</div>
+<div class="baby-tabs" id="nassess-baby-tabs">
+<div class="baby-tab active" onclick="switchBabyTab(0)"><span class="baby-avatar-sm girl">👶</span> 徐大宝 · 女</div>
+<div class="baby-tab" onclick="switchBabyTab(1)"><span class="baby-avatar-sm girl">👶</span> 徐二宝 · 女</div>
+</div>
+<div class="record-toolbar">
+<div class="date-range">
+<input type="date" value="2026-02-15">
+<span>~</span>
+<input type="date" value="2026-03-18">
+</div>
+<div class="spacer"></div>
+<button class="btn btn-main">➕ 新增</button>
+</div>
+<div class="table-scroll">
+<table class="record-table">
+<thead>
+<tr>
+<th>评估日期</th><th>评估项目</th><th>评估结果</th><th>风险等级</th>
+<th>护理措施</th><th>签名</th><th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cell-time">2026-02-15</td>
+<td>新生儿高危因素评估</td>
+<td class="cell-normal">无高危因素</td>
+<td class="cell-normal">低风险</td>
+<td>常规护理，按需哺乳</td>
+<td class="signature">杨璐敏</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-02-15</td>
+<td>新生儿疼痛评估</td>
+<td class="cell-normal">0分 无痛</td>
+<td class="cell-normal">无风险</td>
+<td>无需干预</td>
+<td class="signature">杨璐敏</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-02-15</td>
+<td>新生儿营养风险评估</td>
+<td class="cell-normal">营养状况良好</td>
+<td class="cell-normal">无风险</td>
+<td>纯母乳喂养指导</td>
+<td class="signature">杨璐敏</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+
+<!-- 宝妈评估单 -->
+<div id="doc-maternal_assessment" class="hidden">
+<div class="content-card">
+<div class="content-card-title">📋 宝妈评估单列表</div>
+<div class="record-toolbar">
+<div class="date-range">
+<input type="date" value="2026-02-15">
+<span>~</span>
+<input type="date" value="2026-03-18">
+</div>
+<div class="spacer"></div>
+<button class="btn btn-main">➕ 新增</button>
+</div>
+<div class="table-scroll">
+<table class="record-table">
+<thead>
+<tr>
+<th>评估日期</th><th>文书名称</th><th>评估结果</th><th>创建人</th><th>创建时间</th><th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cell-time">2026-02-15</td>
+<td>住院病人压疮危险因素评估表</td>
+<td><span class="cell-normal">23分 无风险</span></td>
+<td class="signature">杨璐敏</td>
+<td class="cell-time">2026-02-15 14:07</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-02-15</td>
+<td>Barthel指数ADL评估量表</td>
+<td><span class="cell-normal">100分 无依赖</span></td>
+<td class="signature">杨璐敏</td>
+<td class="cell-time">2026-02-15 14:08</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-02-15</td>
+<td>成人疼痛评估单</td>
+<td><span class="cell-normal">0分 无痛</span></td>
+<td class="signature">杨璐敏</td>
+<td class="cell-time">2026-02-15 14:08</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-02-15</td>
+<td>约翰霍普金斯跌倒风险评估量表</td>
+<td><span class="cell-normal">0分 每周评估</span></td>
+<td class="signature">杨璐敏</td>
+<td class="cell-time">2026-02-15 14:07</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+
+
+<!-- 健康教育 -->
+<div id="doc-health_edu" class="hidden">
+<div class="content-card">
+<div class="content-card-title">📖 健康教育记录</div>
+<div class="record-toolbar">
+<div class="date-range">
+<input type="date" value="2026-02-15">
+<span>~</span>
+<input type="date" value="2026-03-18">
+</div>
+<div class="spacer"></div>
+<button class="btn btn-main">➕ 新增</button>
+</div>
+<div class="table-scroll">
+<table class="record-table">
+<thead>
+<tr>
+<th>日期</th><th>教育内容</th><th>教育方式</th><th>接受程度</th><th>家属参与</th><th>签名</th><th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cell-time">2026-02-15</td>
+<td>母乳喂养姿势指导、月子中心规章制度</td>
+<td>口头讲解+示范</td>
+<td class="cell-normal">完全理解</td>
+<td>宝爸参与</td>
+<td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+<tr>
+<td class="cell-time">2026-02-18</td>
+<td>产后康复操、会阴伤口护理</td>
+<td>口头讲解+视频</td>
+<td class="cell-normal">基本理解</td>
+<td>无</td>
+<td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- 交接班 -->
+<div id="doc-handover" class="hidden">
+<div class="content-card">
+<div class="content-card-title">🔄 交接班记录</div>
+<div class="record-toolbar">
+<div class="date-range">
+<input type="date" value="2026-03-07">
+</div>
+<div class="spacer"></div>
+<button class="btn btn-main">➕ 新增</button>
+</div>
+<div class="table-scroll">
+<table class="record-table">
+<thead>
+<tr>
+<th>交接时间</th><th>班次</th><th>宝妈情况</th><th>新生儿情况</th>
+<th>特殊事项</th><th>交班人</th><th>接班人</th><th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cell-time">2026-03-07<br>08:00</td>
+<td>白班→夜班</td>
+<td>体温正常，恶露暗红无渗，乳汁分泌少</td>
+<td>女宝，体温正常，母乳喂养好，黄疸值正常</td>
+<td>无特殊</td>
+<td class="signature">邱婷艳</td>
+<td class="signature">沈心雨</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- 出院评估 -->
+<div id="doc-discharge" class="hidden">
+<div class="content-card">
+<div class="content-card-title">🏠 出院评估</div>
+<div class="record-toolbar">
+<div class="date-range">
+<input type="date" value="2026-03-18">
+</div>
+<div class="spacer"></div>
+<button class="btn btn-main">➕ 新增</button>
+</div>
+<div class="table-scroll">
+<table class="record-table">
+<thead>
+<tr>
+<th>评估日期</th><th>出院类型</th><th>宝妈恢复情况</th><th>新生儿情况</th>
+<th>出院指导</th><th>满意度</th><th>签名</th><th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="cell-time">2026-03-18</td>
+<td>正常出院</td>
+<td class="cell-normal">恢复良好</td>
+<td class="cell-normal">体重增长正常，黄疸消退</td>
+<td>已进行产后康复及新生儿护理指导</td>
+<td class="cell-normal">满意</td>
+<td class="signature">邱婷艳</td>
+<td><div class="actions"><button class="btn-edit">编辑</button><button class="btn-delete">作废</button></div></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+
+</div>
+
+<!-- 右侧面板 -->
+<div class="right-panel">
+
+<!-- 宝妈体征信息 -->
+<div class="panel-card">
+<div class="panel-card-title">👩 宝妈体征信息</div>
+<div class="panel-item"><span class="label">姓名</span><span class="value" id="mom-name">徐银银</span></div>
+<div class="panel-item"><span class="label">年龄</span><span class="value">23岁</span></div>
+<div class="panel-item"><span class="label">身高</span><span class="value">162cm</span></div>
+<div class="panel-item"><span class="label">孕前体重</span><span class="value">52kg</span></div>
+<div class="panel-item"><span class="label">产前体重</span><span class="value">68kg</span></div>
+<div class="panel-item"><span class="label">当前体重</span><span class="value">58kg</span></div>
+<div class="panel-item"><span class="label">BMI</span><span class="value">22.1</span></div>
+<div class="panel-item"><span class="label">血型</span><span class="value">A型</span></div>
+<div class="panel-item"><span class="label">Rh因子</span><span class="value">阳性</span></div>
+<div class="panel-item"><span class="label">过敏史</span><span class="value">无</span></div>
+<div class="panel-item"><span class="label">传染病</span><span class="value">无</span></div>
+<div class="vitals-section">
+<div class="vitals-section-title">🩺 入院基础体征</div>
+<div class="vitals-grid">
+<div class="panel-item"><span class="label">体温</span><span class="value">36.5℃</span></div>
+<div class="panel-item"><span class="label">脉搏</span><span class="value">72次/分</span></div>
+<div class="panel-item"><span class="label">呼吸</span><span class="value">18次/分</span></div>
+<div class="panel-item"><span class="label">血压</span><span class="value">118/76</span></div>
+<div class="panel-item"><span class="label">SpO₂</span><span class="value">98%</span></div>
+<div class="panel-item"><span class="label">血糖</span><span class="value">4.8mmol/L</span></div>
+</div>
+</div>
+<div class="vitals-section">
+<div class="vitals-section-title">📋 产科信息</div>
+<div class="vitals-grid">
+<div class="panel-item"><span class="label">产次</span><span class="value">G1P1</span></div>
+<div class="panel-item"><span class="label">分娩方式</span><span class="value">顺产</span></div>
+<div class="panel-item"><span class="label">孕周</span><span class="value">39W+3</span></div>
+<div class="panel-item"><span class="label">会阴伤口</span><span class="value">I度裂伤</span></div>
+<div class="panel-item"><span class="label">出血量</span><span class="value">280ml</span></div>
+<div class="panel-item"><span class="label">胎盘</span><span class="value">完整</span></div>
+</div>
+</div>
+</div>
+
+<!-- 宝宝切换列表 -->
+<div class="panel-card">
+<div class="panel-card-title">👶 关联宝宝</div>
+<div class="baby-list" id="baby-list">
+<div class="baby-card-mini active" onclick="selectBaby(0)">
+<div class="baby-icon girl">👶</div>
+<div class="baby-info">
+<div class="name">徐大宝</div>
+<div class="detail">女 · 出生18天</div>
+<div class="tag">体重 3850g</div>
+</div>
+</div>
+<div class="baby-card-mini" onclick="selectBaby(1)">
+<div class="baby-icon girl">👶</div>
+<div class="baby-info">
+<div class="name">徐二宝</div>
+<div class="detail">女 · 出生18天</div>
+<div class="tag">体重 3720g</div>
+</div>
+</div>
+</div>
+<div class="panel-item"><span class="label">宝宝数量</span><span class="value" id="baby-count">2</span></div>
+</div>
+
+<!-- 当前宝宝体征（随选中切换） -->
+<div class="panel-card">
+<div class="panel-card-title">👶 <span id="current-baby-name">徐大宝</span> 体征</div>
+<div class="panel-item"><span class="label">性别</span><span class="value" id="cb-gender">女</span></div>
+<div class="panel-item"><span class="label">出生日</span><span class="value">2026-02-15</span></div>
+<div class="panel-item"><span class="label">胎龄</span><span class="value">39W+3</span></div>
+<div class="panel-item"><span class="label">出生体重</span><span class="value" id="cb-birth-weight">3200g</span></div>
+<div class="panel-item"><span class="label">当前体重</span><span class="value" id="cb-current-weight">3850g</span></div>
+<div class="panel-item"><span class="label">出生身长</span><span class="value">50cm</span></div>
+<div class="panel-item"><span class="label">头围</span><span class="value">34cm</span></div>
+<div class="panel-item"><span class="label">胸围</span><span class="value">32cm</span></div>
+<div class="panel-item"><span class="label">Apgar(1min)</span><span class="value">9分</span></div>
+<div class="panel-item"><span class="label">Apgar(5min)</span><span class="value">10分</span></div>
+<div class="panel-item"><span class="label">血型</span><span class="value">A型</span></div>
+<div class="panel-item"><span class="label">足跟血</span><span class="value">已采集</span></div>
+<div class="panel-item"><span class="label">听力</span><span class="value">初筛通过</span></div>
+<div class="panel-item"><span class="label">黄疸</span><span class="value warning">高风险区</span></div>
+<div class="vitals-section">
+<div class="vitals-section-title">🍼 最近一次喂养</div>
+<div class="panel-item"><span class="label">时间</span><span class="value">03-18 06:00</span></div>
+<div class="panel-item"><span class="label">方式</span><span class="value">母乳+配方奶</span></div>
+<div class="panel-item"><span class="label">母乳时长</span><span class="value">10min</span></div>
+<div class="panel-item"><span class="label">配方奶</span><span class="value">30ml</span></div>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+const babiesData = {
+'201': [
+{name:'徐大宝', gender:'女', days:18, birthWeight:'3200g', currentWeight:'3850g', length:'50cm', head:'34cm', chest:'32cm', apgar1:'9', apgar5:'10', bloodType:'A型', avatar:'girl'},
+{name:'徐二宝', gender:'女', days:18, birthWeight:'3100g', currentWeight:'3720g', length:'48cm', head:'33cm', chest:'31cm', apgar1:'8', apgar5:'10', bloodType:'A型', avatar:'girl'}
+],
+'202': [
+{name:'李小宝', gender:'女', days:12, birthWeight:'3150g', currentWeight:'3400g', length:'49cm', head:'33cm', chest:'31cm', apgar1:'9', apgar5:'10', bloodType:'O型', avatar:'girl'}
+],
+'207': [
+{name:'陈小宝', gender:'男', days:3, birthWeight:'3300g', currentWeight:'3100g', length:'51cm', head:'35cm', chest:'33cm', apgar1:'9', apgar5:'10', bloodType:'B型', avatar:'boy'}
+],
+'301': [
+{name:'徐宝宝', gender:'女', days:20, birthWeight:'3200g', currentWeight:'3850g', length:'50cm', head:'34cm', chest:'32cm', apgar1:'9', apgar5:'10', bloodType:'A型', avatar:'girl'}
+],
+'302': [
+{name:'肖小宝', gender:'男', days:4, birthWeight:'3400g', currentWeight:'3150g', length:'51cm', head:'35cm', chest:'33cm', apgar1:'9', apgar5:'10', bloodType:'AB型', avatar:'boy'}
+]
+};
+
+let currentBabies = [];
+let currentBabyIndex = 0;
+
+function showPage(page) {
+if(page==='beds') {
+document.getElementById('page-beds').classList.remove('hidden');
+document.getElementById('page-workspace').classList.add('hidden');
+}
+}
+
+function openWorkspace(bed, name, age, meta, date, remain, babyCount) {
+document.getElementById('page-beds').classList.add('hidden');
+document.getElementById('page-workspace').classList.remove('hidden');
+document.getElementById('ws-avatar').textContent = name[0];
+document.getElementById('ws-name').innerHTML = name + ' <span class="tag">' + bed + '床</span>';
+
+currentBabies = babiesData[bed] || babiesData['301'];
+currentBabyIndex = 0;
+renderBabyList();
+renderBabyTabs();
+updateCurrentBabyPanel();
+
+window.scrollTo(0,0);
+}
+
+function backToBeds() {
+document.getElementById('page-workspace').classList.add('hidden');
+document.getElementById('page-beds').classList.remove('hidden');
+window.scrollTo(0,0);
+}
+
+function renderBabyList() {
+const list = document.getElementById('baby-list');
+const count = document.getElementById('baby-count');
+if(!list) return;
+
+let html = '';
+currentBabies.forEach((b, i) => {
+const cls = i === currentBabyIndex ? 'active' : '';
+const iconBg = b.avatar === 'girl' ? 'girl' : '';
+html += '<div class="baby-card-mini ' + cls + '" onclick="selectBaby(' + i + ')">' +
+'<div class="baby-icon ' + iconBg + '">👶</div>' +
+'<div class="baby-info"><div class="name">' + b.name + '</div><div class="detail">' + b.gender + ' · 出生' + b.days + '天</div><div class="tag">体重 ' + b.currentWeight + '</div></div>' +
+'</div>';
+});
+list.innerHTML = html;
+if(count) count.textContent = currentBabies.length;
+}
+
+function renderBabyTabs() {
+const tabIds = ['neonatal-baby-tabs', 'jaundice-baby-tabs', 'feeding-baby-tabs', 'weight-baby-tabs', 'vaccine-baby-tabs', 'hearing-baby-tabs', 'screening-baby-tabs', 'apgar-baby-tabs', 'nassess-baby-tabs', 'nvitals-baby-tabs'];
+tabIds.forEach(id => {
+const el = document.getElementById(id);
+if(!el) return;
+let html = '';
+currentBabies.forEach((b, i) => {
+const cls = i === currentBabyIndex ? 'active' : '';
+const iconBg = b.avatar === 'girl' ? 'girl' : '';
+html += '<div class="baby-tab ' + cls + '" onclick="switchBabyTab(' + i + ')">' +
+'<span class="baby-avatar-sm ' + iconBg + '">👶</span> ' + b.name + ' · ' + b.gender +
+'</div>';
+});
+el.innerHTML = html;
+});
+}
+
+function selectBaby(idx) {
+currentBabyIndex = idx;
+document.querySelectorAll('.baby-card-mini').forEach((el, i) => {
+if(i === idx) el.classList.add('active');
+else el.classList.remove('active');
+});
+updateCurrentBabyPanel();
+renderBabyTabs();
+}
+
+function switchBabyTab(idx) {
+currentBabyIndex = idx;
+const allTabContainers = document.querySelectorAll('.baby-tabs');
+allTabContainers.forEach(container => {
+container.querySelectorAll('.baby-tab').forEach((el, i) => {
+if(i === idx) el.classList.add('active');
+else el.classList.remove('active');
+});
+});
+renderBabyList();
+updateCurrentBabyPanel();
+}
+
+function updateCurrentBabyPanel() {
+const b = currentBabies[currentBabyIndex];
+if(!b) return;
+
+const nameEl = document.getElementById('current-baby-name');
+const genderEl = document.getElementById('cb-gender');
+const bwEl = document.getElementById('cb-birth-weight');
+const cwEl = document.getElementById('cb-current-weight');
+
+if(nameEl) nameEl.textContent = b.name;
+if(genderEl) genderEl.textContent = b.gender;
+if(bwEl) bwEl.textContent = b.birthWeight;
+if(cwEl) cwEl.textContent = b.currentWeight;
+}
+
+function switchPostpartumView(view) {
+// 更新按钮状态
+const btns = document.querySelectorAll('#doc-postpartum .view-toggle button');
+btns.forEach(b => b.classList.remove('active'));
+if(view === 'table') btns[0].classList.add('active');
+else btns[1].classList.add('active');
+// 切换视图
+const tableEl = document.getElementById('postpartum-table');
+const timelineEl = document.getElementById('postpartum-timeline');
+if(tableEl && timelineEl) {
+if(view === 'table') { tableEl.classList.remove('hidden'); timelineEl.classList.add('hidden'); }
+else { tableEl.classList.add('hidden'); timelineEl.classList.remove('hidden'); }
+}
+}
+
+function switchDocType(type) {
+document.querySelectorAll('.sidebar-nav .nav-item').forEach(el => {
+el.classList.remove('active');
+const onclick = el.getAttribute('onclick');
+if(onclick && onclick.includes("'" + type + "'")) el.classList.add('active');
+});
+
+const allDocs = ['postpartum','neonatal','jaundice','feeding','weight','vaccine','hearing','screening','apgar','neonatal_assessment','maternal_assessment','health_edu','handover','discharge'];
+allDocs.forEach(t => {
+const el = document.getElementById('doc-' + t);
+if(el) el.classList.add('hidden');
+});
+const target = document.getElementById('doc-' + type);
+if(target) target.classList.remove('hidden');
+}
+</script>
+</body>
+</html>
